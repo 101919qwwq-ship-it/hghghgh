@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Produkt CRUD</title>
+  <style> body{font-family:Arial;padding:20px;max-width:900px;margin:auto} table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:8px} th{background:#f2f2f2} input,button{padding:6px;margin:4px} </style>
+</head>
+<body>
+  <h2>Produkty</h2>
+  <div>
+    <input id="nazwa" placeholder="Nazwa">
+    <input id="sku" placeholder="SKU">
+    <input id="cena" placeholder="Cena" type="number" step="0.01">
+    <input id="kategoria" placeholder="Kategoria">
+    <input id="stan" placeholder="Stan magazynowy" type="number">
+    <button id="add">Dodaj</button>
+  </div>
+  <div id="status"></div>
+  <div id="table"></div>
+
+<script>
+const API = window.API_BASE || 'http://localhost:3000/product';
+async function load(){
+  document.getElementById('status').textContent='Ładowanie...';
+  try{
+    const res = await fetch(API);
+    const data = await res.json();
+    if(!Array.isArray(data)) throw new Error('Błędna odpowiedź');
+    const html = [`<table><tr><th>ID</th><th>Nazwa</th><th>SKU</th><th>Cena</th><th>Kategoria</th><th>Stan</th><th>Akcje</th></tr>`];
+    data.forEach(p=>{
+      html.push(`<tr>
+        <td>${p.id}</td>
+        <td><input id="nazwa_${p.id}" value="${p.nazwa||''}"></td>
+        <td><input id="sku_${p.id}" value="${p.sku||''}"></td>
+        <td><input id="cena_${p.id}" value="${p.cena||0}" type="number" step="0.01"></td>
+        <td><input id="kategoria_${p.id}" value="${p.kategoria||''}"></td>
+        <td><input id="stan_${p.id}" value="${p.stan_magazynu||0}" type="number"></td>
+        <td>
+          <button onclick="update(${p.id})">Zapisz</button>
+          <button onclick="del(${p.id})">Usuń</button>
+        </td>
+      </tr>`);
+    });
+    html.push('</table>');
+    document.getElementById('table').innerHTML = html.join('');
+    document.getElementById('status').textContent='Gotowe';
+  }catch(e){
+    document.getElementById('status').textContent='Błąd: '+e.message;
+  }
+}
+
+async function add(){
+  const nazwa = document.getElementById('nazwa').value.trim();
+  const sku = document.getElementById('sku').value.trim();
+  const cena = parseFloat(document.getElementById('cena').value);
+  if(!nazwa||!sku||isNaN(cena)) return alert('Podaj poprawne dane');
+  await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nazwa,sku,cena,kategoria:document.getElementById('kategoria').value, stan_magazynu: parseInt(document.getElementById('stan').value)||0})});
+  load();
+}
+
+async function update(id){
+  const nazwa = document.getElementById('nazwa_'+id).value.trim();
+  const sku = document.getElementById('sku_'+id).value.trim();
+  const cena = parseFloat(document.getElementById('cena_'+id).value);
+  const kategoria = document.getElementById('kategoria_'+id).value;
+  const stan = parseInt(document.getElementById('stan_'+id).value) || 0;
+  await fetch(API+'/'+id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nazwa,sku,cena,kategoria,stan_magazynu:stan})});
+  load();
+}
+
+async function del(id){
+  if(!confirm('Usuń produkt '+id+'?')) return;
+  await fetch(API+'/'+id, {method:'DELETE'});
+  load();
+}
+
+document.getElementById('add').addEventListener('click', add);
+load();
+</script>
+</body>
+</html>
