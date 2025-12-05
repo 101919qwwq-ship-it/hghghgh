@@ -1,26 +1,41 @@
-# Projekt CRUD — Produkt
+# Droid CRUD — Railway-ready project
+Stack: Node.js, Express, PostgreSQL, simple SQL migrations (custom runner)
 
-Repo zawiera:
-- `api/` — backend Node.js + Express + migracje SQL
-- `frontend/` — prosty frontend HTML/JS korzystający z API
+## What you get
+- Single deployable project that serves frontend and REST API from one URL.
+- Migrations are applied automatically on start (Procfile runs migrations before server).
+- Uses DATABASE_URL environment variable (Railway provides it).
 
-## Jak uruchomić lokalnie
+## Endpoints
+- GET  /api/droids
+- GET  /api/droids/:id
+- POST /api/droids
+- PUT  /api/droids/:id
+- DELETE /api/droids/:id
 
-1. W katalogu `api/`:
-   - skopiuj `.env.example` do `.env` i ustaw `DATABASE_URL` (Postgres)
-   - zainstaluj zależności: `npm install`
-   - uruchom migracje: `npm run migrate`
-   - uruchom aplikację: `npm start`
+## Fields (droid)
+- id (serial primary key)
+- name (text, required)
+- type (text, required)
+- manufacturer (text)
+- year_production (int)
+- status (text)
 
-2. Frontend:
-   - Otwórz `frontend/index.html` i ustaw `API_BASE` jeśli potrzebujesz zmienić URL API
-   - Możesz użyć `npx serve frontend` do hostowania statycznego
+## Local run
+1. Install Node.js (v16+)
+2. Copy `.env.example` -> `.env` and set DATABASE_URL
+3. Install deps:
+   ```
+   npm install
+   ```
+4. Run migrations + server:
+   ```
+   npm run start
+   ```
+5. Open `http://localhost:3000`
 
-## Deploy na Railway (skrót)
-1. Podłącz repo do Railway
-2. Dodaj plugin Postgres
-3. Ustaw prestart: `npm run migrate` i start: `npm start` w ustawieniach projektu `api/`
-4. Deployuj
-
-## Etap B — dodanie pól
-Edytuj `migration.sql` dodając `ALTER TABLE ... ADD COLUMN IF NOT EXISTS ...` i zaktualizuj `routes_product.js`.
+## Deploy to Railway
+- Create new project, set up PostgreSQL plugin (or provide DATABASE_URL).
+- Deploy from GitHub or upload this project.
+- Railway sets `DATABASE_URL`. The Procfile runs migrations on each deploy.
+- After deploy, open the generated URL.
